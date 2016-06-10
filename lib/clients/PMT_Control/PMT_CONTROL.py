@@ -1,5 +1,6 @@
 from PyQt4 import QtGui, uic
 from twisted.internet.defer import inlineCallbacks
+from common.lib.clients.connection import connection
 import os
 
 SIGNALID = 874193
@@ -20,7 +21,7 @@ class pmtWidget(QtGui.QWidget):
         from labrad import types as T
         self.T = T
         if self.cxn is None:
-            self.cxn = connection("PMT client")
+            self.cxn = connection(name="PMT client")
             yield self.cxn.connect()
 	self.server = yield self.cxn.get_server('normalpmtflow')
         yield self.initializeContent()
