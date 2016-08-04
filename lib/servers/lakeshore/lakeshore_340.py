@@ -40,6 +40,17 @@ import labrad.units as _u
 from labrad.gpib import GPIBManagedServer, GPIBDeviceWrapper
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+def parse(val):
+    """
+    Parse function to account for the occasional GPIB glitches where we get extra characters in front of the numbers.
+    """
+    if len(val):
+        try:
+            return float(val)
+        except ValueError:
+            return parse(val[1:])
+    else:
+        return 0.0
 
 class LakeshoreWrapper(GPIBDeviceWrapper):
 
@@ -54,18 +65,32 @@ class LakeshoreWrapper(GPIBDeviceWrapper):
         output = yield self.read()
         returnValue(output)
 
-
 class LakeshoreServer(GPIBManagedServer):
     name = 'Lakeshore 340' # Server name
     deviceName = 'LSCI MODEL340' # Model string returned from *IDN?
     deviceWrapper = LakeshoreWrapper
 
-    @setting(46, channel=['s'])
-    def get_temperature_reading(self, c, channel='A'):
-        dev = self.selectedDevice(c)
-        temperature = yield dev.get_temperature_reading(channel)
-        returnValue(temperature)
+    @setting(10, 'Temperatures', returns=['*v[K]'])
+    def temperatures(self, c):
+        """Read channel temperatures.
 
+        Returns a ValueList of the channel temperatures in Kelvin.
+        """
+        dev = self.selectedDevice(c)
+        resp = yield dev.query('KRDG? 0')
+        vals = [parse(val) * _u.K for val in resp.split(',')]
+        returnValue(vals)
+
+    @setting(11, 'Voltages', returns=['*v[V]'])
+    def voltages(self, c):
+        """Read channel voltages.
+
+        Returns a ValueList of the channel voltages in Volts.
+        """
+        dev = self.selectedDevice(c)
+        resp = yield dev.query('SRDG? 0')
+        vals = [parse(val) * _u.V for val in resp.split(',')]
+        returnValue(vals)
 __server__ = LakeshoreServer()
 
 if __name__ == '__main__':
