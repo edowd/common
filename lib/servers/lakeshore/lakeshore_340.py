@@ -19,11 +19,10 @@ This is a temporary script file.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 """
 ### BEGIN NODE INFO
 [info]
-name = Lakeshore 340 Temperature Monitor
+name = Lakeshore 340
 version = 1.0
 description =
 
@@ -36,10 +35,11 @@ message = 987654321
 timeout = 5
 ### END NODE INFO
 """
-
 from labrad.server import setting
+import labrad.units as _u
 from labrad.gpib import GPIBManagedServer, GPIBDeviceWrapper
 from twisted.internet.defer import inlineCallbacks, returnValue
+
 
 class LakeshoreWrapper(GPIBDeviceWrapper):
 
@@ -54,23 +54,17 @@ class LakeshoreWrapper(GPIBDeviceWrapper):
         output = yield self.read()
         returnValue(output)
 
-    def initialize(self):
-        '''
-        Provides a lookup table for waveform to GPIB lingo
-        '''
-        #self.lookup = {'sine':'SIN', 'square':'SQU', 'ramp':'RAMP', 'pulse':'PULS', 'noise':'NOIS', 'DC' : 'DC', 'USER':'USER'}
-
 
 class LakeshoreServer(GPIBManagedServer):
-    name = 'Lakeshore 340 Server' # Server name
-    deviceName = 'Lakeshore 340' # Model string returned from *IDN?
+    name = 'Lakeshore 340' # Server name
+    deviceName = 'LSCI MODEL340' # Model string returned from *IDN?
     deviceWrapper = LakeshoreWrapper
 
-    @setting(0, 'get_temperature_reading', channel = 's', output = 'v')
+    @setting(46, channel=['s'])
     def get_temperature_reading(self, c, channel='A'):
         dev = self.selectedDevice(c)
-        yield dev.get_temperature_reading(channel)
-
+        temperature = yield dev.get_temperature_reading(channel)
+        returnValue(temperature)
 
 __server__ = LakeshoreServer()
 
