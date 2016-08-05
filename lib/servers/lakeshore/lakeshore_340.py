@@ -19,10 +19,11 @@ This is a temporary script file.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 """
 ### BEGIN NODE INFO
 [info]
-name = Lakeshore 340
+name = Lakeshore 340 Temperature Monitor
 version = 1.0
 description =
 
@@ -35,11 +36,12 @@ message = 987654321
 timeout = 5
 ### END NODE INFO
 """
+
 from labrad.server import setting
-import labrad.units as _u
 from labrad.gpib import GPIBManagedServer, GPIBDeviceWrapper
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+<<<<<<< HEAD
 def parse(val):
     """
     Parse function to account for the occasional GPIB glitches where we get extra characters in front of the numbers.
@@ -52,6 +54,8 @@ def parse(val):
     else:
         return 0.0
 
+=======
+>>>>>>> parent of a681ec7... First working version
 class LakeshoreWrapper(GPIBDeviceWrapper):
 
     @inlineCallbacks
@@ -65,9 +69,18 @@ class LakeshoreWrapper(GPIBDeviceWrapper):
         output = yield self.read()
         returnValue(output)
 
+<<<<<<< HEAD
+=======
+    def initialize(self):
+        '''
+        Provides a lookup table for waveform to GPIB lingo
+        '''
+        #self.lookup = {'sine':'SIN', 'square':'SQU', 'ramp':'RAMP', 'pulse':'PULS', 'noise':'NOIS', 'DC' : 'DC', 'USER':'USER'}
+
+
 class LakeshoreServer(GPIBManagedServer):
-    name = 'Lakeshore 340' # Server name
-    deviceName = 'LSCI MODEL340' # Model string returned from *IDN?
+    name = 'Lakeshore 340 Server' # Server name
+    deviceName = 'Lakeshore 340' # Model string returned from *IDN?
     deviceWrapper = LakeshoreWrapper
 
     @setting(10, channel=['s'], returns=['*v[K]'])
@@ -87,6 +100,11 @@ class LakeshoreServer(GPIBManagedServer):
         resp = yield dev.query('KRDG? ' + channel)
         vals = [parse(val) * _u.K for val in resp.split(',')]
         returnValue(vals)
+=======
+    @setting(0, 'get_temperature_reading', channel = 's', output = 'v')
+    def get_temperature_reading(self, c, channel='A'):
+        dev = self.selectedDevice(c)
+        yield dev.get_temperature_reading(channel)
 
     @setting(12, channel=['s'], returns=['*v[V]'])
     def voltage_list(self, c, channel='A'):
