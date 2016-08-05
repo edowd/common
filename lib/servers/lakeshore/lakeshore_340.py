@@ -42,6 +42,7 @@ from labrad.gpib import GPIBManagedServer, GPIBDeviceWrapper
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def parse(val):
     """
     Parse function to account for the occasional GPIB glitches where we get extra characters in front of the numbers.
@@ -54,6 +55,8 @@ def parse(val):
     else:
         return 0.0
 
+=======
+>>>>>>> parent of a681ec7... First working version
 =======
 >>>>>>> parent of a681ec7... First working version
 class LakeshoreWrapper(GPIBDeviceWrapper):
@@ -70,7 +73,10 @@ class LakeshoreWrapper(GPIBDeviceWrapper):
         returnValue(output)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of a681ec7... First working version
     def initialize(self):
         '''
         Provides a lookup table for waveform to GPIB lingo
@@ -83,6 +89,7 @@ class LakeshoreServer(GPIBManagedServer):
     deviceName = 'Lakeshore 340' # Model string returned from *IDN?
     deviceWrapper = LakeshoreWrapper
 
+<<<<<<< HEAD
     @setting(10, channel=['s'], returns=['*v[K]'])
     def temperature(self, c, channel='A'):
         dev = self.selectedDevice(c)
@@ -101,10 +108,16 @@ class LakeshoreServer(GPIBManagedServer):
         vals = [parse(val) * _u.K for val in resp.split(',')]
         returnValue(vals)
 =======
+=======
+>>>>>>> parent of a681ec7... First working version
     @setting(0, 'get_temperature_reading', channel = 's', output = 'v')
     def get_temperature_reading(self, c, channel='A'):
         dev = self.selectedDevice(c)
         yield dev.get_temperature_reading(channel)
+<<<<<<< HEAD
+=======
+
+>>>>>>> parent of a681ec7... First working version
 
     @setting(12, channel=['s'], returns=['*v[V]'])
     def voltage_list(self, c, channel='A'):
