@@ -55,10 +55,10 @@ def parse(val):
 class LakeshoreWrapper(GPIBDeviceWrapper):
 
     @inlineCallbacks
-    def get_temperature_reading(self, channel='A'):
-        '''
+    def temperature(self, channel='A'):
+        """
         
-        '''
+        """
         command = "KRDG? " + channel
         yield self.write(command)
         
@@ -70,27 +70,36 @@ class LakeshoreServer(GPIBManagedServer):
     deviceName = 'LSCI MODEL340' # Model string returned from *IDN?
     deviceWrapper = LakeshoreWrapper
 
-    @setting(10, 'Temperatures', returns=['*v[K]'])
-    def temperatures(self, c):
-        """Read channel temperatures.
+    @setting(10, channel=['s'], returns=['*v[K]'])
+    def temperature(self, c, channel='A'):
+        dev = self.selectedDevice(c)
+        val = yield dev.get_temperature_reading(channel)
+        returnValue(val)
+
+    @setting(11, channel=['s'], returns=['*v[K]'])
+    def temperature_list(self, c, channel='A'):
+        """
+        Read channel temperatures.
 
         Returns a ValueList of the channel temperatures in Kelvin.
         """
         dev = self.selectedDevice(c)
-        resp = yield dev.query('KRDG? 0')
+        resp = yield dev.query('KRDG? ' + channel)
         vals = [parse(val) * _u.K for val in resp.split(',')]
         returnValue(vals)
 
-    @setting(11, 'Voltages', returns=['*v[V]'])
-    def voltages(self, c):
-        """Read channel voltages.
+    @setting(12, channel=['s'], returns=['*v[V]'])
+    def voltage_list(self, c, channel='A'):
+        """
+        Read channel voltages.
 
         Returns a ValueList of the channel voltages in Volts.
         """
         dev = self.selectedDevice(c)
-        resp = yield dev.query('SRDG? 0')
+        resp = yield dev.query('SRDG? ' + channel)
         vals = [parse(val) * _u.V for val in resp.split(',')]
         returnValue(vals)
+        
 __server__ = LakeshoreServer()
 
 if __name__ == '__main__':
